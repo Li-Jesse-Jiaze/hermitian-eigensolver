@@ -2,6 +2,9 @@
 #define GIVENS_ROTATION_H
 
 #include <armadillo>
+#include "base.h"
+
+using namespace base;
 
 // Support reals only
 template<typename Scalar>
@@ -58,14 +61,14 @@ void GivensRotation<Scalar>::makeGivens(const Scalar &p, const Scalar &q, Scalar
 }
 
 template<typename Scalar, typename OtherScalar>
-void applyGivensRight(Scalar* matrix_ptr, arma::uword nRows, arma::uword p, arma::uword q, const GivensRotation<OtherScalar>& g) {
+void apply_givens_right(Scalar *matrix_ptr, Index nRows, Index p, Index q, const GivensRotation<OtherScalar> &g) {
     Scalar c = g.c();
     Scalar s = g.s();
 
     if (c == Scalar(1) && s == Scalar(0)) return;
 
-    for (arma::uword i = 0; i < nRows; ++i) {
-        Scalar* row_ptr = matrix_ptr + i;
+    for (Index i = 0; i < nRows; ++i) {
+        Scalar *row_ptr = matrix_ptr + i;
         Scalar x = row_ptr[p * nRows];
         Scalar y = row_ptr[q * nRows];
 
