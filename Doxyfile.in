@@ -1,0 +1,26 @@
+# Doxygen configuration file template
+
+# Project details
+PROJECT_NAME = "@PROJECT_NAME@"
+PROJECT_NUMBER = "@PROJECT_VERSION@"
+
+# Output directory
+OUTPUT_DIRECTORY = @DOXYGEN_OUTPUT_DIR@
+
+# Input files
+INPUT = @DOXYGEN_INPUT_DIR@
+
+# Recursively process subdirectories
+RECURSIVE = YES
+
+# Enable HTML output
+GENERATE_HTML = YES
+
+# Disable LaTeX output (enable if you need PDF)
+GENERATE_LATEX = NO
+
+# Extract all members (private/public/protected)
+EXTRACT_ALL = YES
+
+# Optimize output for C++
+OPTIMIZE_OUTPUT_FOR_CPLUSPLUS = YES

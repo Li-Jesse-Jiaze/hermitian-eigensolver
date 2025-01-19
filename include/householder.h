@@ -3,8 +3,15 @@
 
 #include "base.h"
 
+/**
+ * @brief Make a reflector H s.t. H v = ||v|| e1 = [beta, 0, ..., 0]^T where H = I - tau u u^*, see Golub's "Matrix Computations" algorithm 5.1.1.
+ * 
+ * @param[in,out] vector The input v and the output u with u[1:] in v[1:]
+ * @param tau The scalar factor of the Householder
+ * @param beta The norm of v
+ */
 template<typename VectorType, typename Scalar, typename RealScalar>
-void make_householder_and_reflect(VectorType &vector, Scalar &tau, RealScalar &beta) {
+void make_householder(VectorType &vector, Scalar &tau, RealScalar &beta) {
     const Index n = vector.n_elem;
     if (n == 0) {
         tau = Scalar(0);
@@ -13,19 +20,22 @@ void make_householder_and_reflect(VectorType &vector, Scalar &tau, RealScalar &b
     }
 
     Scalar c0 = vector[0];
-    RealScalar tailSqNorm = RealScalar(0);
+    RealScalar tail_abs2 = RealScalar(0);
     if (n > 1) {
-        tailSqNorm = arma::norm(vector.subvec(1, n - 1)) * arma::norm(vector.subvec(1, n - 1));
+        tail_abs2 = arma::norm(vector.subvec(1, n - 1)) * arma::norm(vector.subvec(1, n - 1));
     }
 
     const RealScalar tol = std::numeric_limits<RealScalar>::min();
-    if ((tailSqNorm <= tol) && ((std::imag(c0) * std::imag(c0)) <= tol)) {
+    if ((tail_abs2 <= tol) && ((std::imag(c0) * std::imag(c0)) <= tol)) {
+        // If is already "done"
         tau = Scalar(0);
         beta = std::real(c0);
         if (n > 1)
             vector.subvec(1, n - 1).zeros();
     } else {
-        beta = std::sqrt(std::norm(c0) + tailSqNorm);
+        // beta = -sign(real(c0)) * ||v||_2
+        // std::norm() is the absolute square not the Euclidean norm
+        beta = std::sqrt(std::norm(c0) + tail_abs2);
         if (std::real(c0) >= RealScalar(0)) {
             beta = -beta;
         }
@@ -36,20 +46,28 @@ void make_householder_and_reflect(VectorType &vector, Scalar &tau, RealScalar &b
     }
 }
 
+/**
+ * @brief A = H A where H = I - tau u u^* and u = [1 v]
+ * 
+ * @param A The input matrix
+ * @param v Tail of the Householder vector
+ * @param tau The scalar factor of the Householder
+ * @param workspace Pointer for memory reuse with at least A.n_cols entries
+ */
 template<typename MatrixType, typename VectorType, typename Scalar>
-void apply_householder_left(MatrixType &M, const VectorType &v, const Scalar &tau, Scalar *workspace) {
-    if (M.n_rows == 1) {
-        M *= (Scalar(1) - tau);
+void apply_householder_left(MatrixType &A, const VectorType &v, const Scalar &tau, Scalar *workspace) {
+    if (A.n_rows == 1) {
+        A *= (Scalar(1) - tau);
         return;
     }
     if (tau == Scalar(0)) {
         return;
     }
-    arma::Row<Scalar> tmp(workspace, M.n_cols, false, false);
-    arma::subview<Scalar> bottom = M.rows(1, M.n_rows - 1);
+    arma::Row<Scalar> tmp(workspace, A.n_cols, false, false);
+    arma::subview<Scalar> bottom = A.rows(1, A.n_rows - 1);
     tmp = v.t() * bottom;
-    tmp += M.row(0);
-    M.row(0) -= tau * tmp;
+    tmp += A.row(0);
+    A.row(0) -= tau * tmp;
     bottom -= tau * v * tmp;
 }
 

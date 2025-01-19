@@ -1,7 +1,7 @@
-#include "unit_test.h"
+#include "test.h"
 
 int main() {
-    test_time();
+    test_gen();
 
     return 0;
 }

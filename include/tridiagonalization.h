@@ -17,7 +17,7 @@ void tridiagonalization(MatrixType &mat, RealVectorType &diag, RealVectorType &s
 
         RealScalar beta;
         Scalar tau;
-        make_householder_and_reflect(tail, tau, beta);
+        make_householder(tail, tau, beta);
 
         mat(i + 1, i) = Scalar(1);
 
