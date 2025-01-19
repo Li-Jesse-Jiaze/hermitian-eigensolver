@@ -1,7 +1,5 @@
 #include <iostream>
 #include <armadillo>
-#include <Eigen/Dense>
-#include <Eigen/QR>
 #include <HermitianEigenSolver.h>
 
 void test_test() {
@@ -9,27 +7,64 @@ void test_test() {
     constexpr arma::uword n = 5;
 
     // Generate a random Hermitian (complex symmetric) matrix
-    arma::cx_mat A = arma::randu<arma::cx_mat>(n, n);
+    auto A = arma::randu<arma::cx_mat>(n, n);
     A = 0.5 * (A + A.t());  // Make it Hermitian
 
-    A.print("A:");
+//    A.print("A:");
 
     // Backup the original matrix for comparison
     arma::cx_mat A_copy = A;
 
-    HermitianEigenSolver<arma::cx_mat> hs(A);
+    arma::wall_clock timer;
+    timer.tic();
+    HermitianEigenSolver<arma::cx_mat> hs(A, false);
+    std::cout << "Mine: " << timer.toc() << std::endl;
     hs.eigenvalues().print();
-    hs.eigenvectors().print();
-    // Perform tridiagonalization using Eigen
-    Eigen::MatrixXcd eigenA = Eigen::MatrixXcd::Map(reinterpret_cast<std::complex<double>*>(A_copy.memptr()), n, n);
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> es;
-    es.compute(eigenA);
-    std::cout << es.eigenvalues() << std::endl;
-    std::cout << es.eigenvectors() << std::endl;
 
-    arma::cx_vec arma_ev;
+    arma::vec arma_ev;
     arma::cx_mat arma_evs;
-    arma::eig_gen(arma_ev, arma_evs, A_copy);
+    timer.tic();
+    arma::eig_sym(arma_ev, A_copy);
+    std::cout << "Arma: " << timer.toc() << std::endl;
     arma_ev.print();
-    arma_evs.print();
+}
+
+void test_time() {
+    // Matrix size
+    constexpr arma::uword n = 100;
+    constexpr int num_iterations = 10;
+
+    double total_time_mine = 0.0;
+    double total_time_arma = 0.0;
+
+    for (int i = 0; i < num_iterations; ++i) {
+        // Generate a random Hermitian (complex symmetric) matrix
+        auto A = arma::randu<arma::cx_mat>(n, n);
+        A = 0.5 * (A + A.t());  // Make it Hermitian
+
+        // Backup the original matrix for comparison
+        arma::cx_mat A_copy = A;
+
+        arma::wall_clock timer;
+
+        // Test custom HermitianEigenSolver
+        timer.tic();
+        HermitianEigenSolver<arma::cx_mat> hs(A);
+        total_time_mine += timer.toc();
+
+        // Test Armadillo's eig_gen
+        arma::vec arma_ev;
+        arma::cx_mat arma_evs;
+        timer.tic();
+        arma::eig_sym(arma_ev, arma_evs, A_copy);
+        total_time_arma += timer.toc();
+    }
+
+    // Compute average times
+    double avg_time_mine = total_time_mine / num_iterations;
+    double avg_time_arma = total_time_arma / num_iterations;
+
+    // Print results
+    std::cout << "Average time (Mine): " << avg_time_mine << " seconds" << std::endl;
+    std::cout << "Average time (Arma): " << avg_time_arma << " seconds" << std::endl;
 }

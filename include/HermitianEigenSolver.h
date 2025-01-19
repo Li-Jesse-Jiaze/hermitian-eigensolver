@@ -1,20 +1,17 @@
 #ifndef HERMITIAN_EIGEN_SOLVER_H
 #define HERMITIAN_EIGEN_SOLVER_H
 
-#include <armadillo>
-#include "Tridiagonalization.h"
-#include "GivensRotation.h"
+#include "tridiagonalization.h"
+#include "givens.h"
 #include "base.h"
-
-using namespace base;
 
 template<typename RealScalar, typename Scalar>
 static void tri_diag_qr_step(RealScalar *diag, RealScalar *subDiag, Index start, Index end, Scalar *matrixQ, Index n);
 
 template<typename MatrixType, typename RealVectorType>
-void compute_from_tri_diag(RealVectorType &diag, RealVectorType &subDiag,
-                           Index maxIterations, bool computeEigenvectors,
-                           MatrixType &eigenVectors);
+void eigen_tri_diag(RealVectorType &diag, RealVectorType &sub_diag,
+                    Index max_iter, bool do_vectors,
+                    MatrixType &eigen_vectors);
 
 template<typename MatrixType>
 class HermitianEigenSolver {
@@ -31,16 +28,16 @@ public:
               mSubDiag(),
               mHouseholderCoefficients() {}
 
-    explicit HermitianEigenSolver(const MatrixType &matrix, bool computeEigenvectors = true)
+    explicit HermitianEigenSolver(const MatrixType &matrix, bool computeVectors = true)
             : mEigenVectors(matrix.n_rows, matrix.n_cols),
               mWorkspace(matrix.n_cols),
               mEigenValues(matrix.n_cols),
               mSubDiag(matrix.n_rows > 1 ? matrix.n_rows - 1 : 1),
               mHouseholderCoefficients(matrix.n_cols > 1 ? matrix.n_cols - 1 : 1) {
-        compute(matrix, computeEigenvectors);
+        compute(matrix, computeVectors);
     }
 
-    HermitianEigenSolver &compute(const MatrixType &matrix, bool computeEigenvectors = true);
+    HermitianEigenSolver &compute(const MatrixType &matrix, bool computeVectors = true);
 
 
     const MatrixType &eigenvectors() const {
@@ -63,7 +60,7 @@ protected:
 
 template<typename MatrixType>
 HermitianEigenSolver<MatrixType> &
-HermitianEigenSolver<MatrixType>::compute(const MatrixType &matrix, bool computeEigenvectors) {
+HermitianEigenSolver<MatrixType>::compute(const MatrixType &matrix, bool computeVectors) {
     Index n = matrix.n_cols;
     mEigenValues.resize(n);
 
@@ -82,8 +79,8 @@ HermitianEigenSolver<MatrixType>::compute(const MatrixType &matrix, bool compute
     mat /= scale;
     mSubDiag.resize(n - 1);
     mHouseholderCoefficients.resize(n - 1);
-    tridiagonalization(mat, diag, mSubDiag, mHouseholderCoefficients, mWorkspace, computeEigenvectors);
-    compute_from_tri_diag(diag, mSubDiag, mMaxIterations, computeEigenvectors, mEigenVectors);
+    tridiagonalization(mat, diag, mSubDiag, mHouseholderCoefficients, mWorkspace, computeVectors);
+    eigen_tri_diag(diag, mSubDiag, mMaxIterations, computeVectors, mEigenVectors);
     mEigenValues *= scale;
     return *this;
 }
@@ -111,40 +108,43 @@ static void tri_diag_qr_step(RealScalar *diag, RealScalar *subDiag, Index start,
     RealScalar z = subDiag[start];
     // If z ever becomes zero, the Givens rotation will be the identity and z will stay zero for all future iterations.
     for (Index k = start; k < end && z != RealScalar(0); ++k) {
-        GivensRotation<RealScalar> rot;
-        rot.makeGivens(x, z);
+//        GivensRotation<RealScalar> rot;
+//        rot.makeGivens(x, z);
+        RealScalar c, s;
+        make_givens(x, z, c, s);
 
         // do T = G' T G
-        RealScalar sdk = rot.s() * diag[k] + rot.c() * subDiag[k];
-        RealScalar dkp1 = rot.s() * subDiag[k] + rot.c() * diag[k + 1];
+        RealScalar sdk = s * diag[k] + c * subDiag[k];
+        RealScalar dkp1 = s * subDiag[k] + c * diag[k + 1];
 
         diag[k] =
-                rot.c() * (rot.c() * diag[k] - rot.s() * subDiag[k]) -
-                rot.s() * (rot.c() * subDiag[k] - rot.s() * diag[k + 1]);
-        diag[k + 1] = rot.s() * sdk + rot.c() * dkp1;
-        subDiag[k] = rot.c() * sdk - rot.s() * dkp1;
+                c * (c * diag[k] - s * subDiag[k]) -
+                s * (c * subDiag[k] - s * diag[k + 1]);
+        diag[k + 1] = s * sdk + c * dkp1;
+        subDiag[k] = c * sdk - s * dkp1;
 
         if (k > start)
-            subDiag[k - 1] = rot.c() * subDiag[k - 1] - rot.s() * z;
+            subDiag[k - 1] = c * subDiag[k - 1] - s * z;
 
         // "Chasing the bulge" to return to Hessenberg form.
         x = subDiag[k];
         if (k < end - 1) {
-            z = -rot.s() * subDiag[k + 1];
-            subDiag[k + 1] = rot.c() * subDiag[k + 1];
+            z = -s * subDiag[k + 1];
+            subDiag[k + 1] = c * subDiag[k + 1];
         }
 
         // apply the givens rotation to the unit matrix Q = Q * G
         if (matrixQ) {
-            apply_givens_right(matrixQ, n, k, k + 1, rot);
+//            applyGivensRight(matrixQ, n, k, k + 1, rot);
+            apply_givens_right(matrixQ, n, k, k + 1, c, s);
         }
     }
 }
 
 template<typename MatrixType, typename RealVectorType>
-void compute_from_tri_diag(RealVectorType &diag, RealVectorType &subDiag,
-                           Index maxIterations, bool computeEigenvectors,
-                           MatrixType &eigenVectors) {
+void eigen_tri_diag(RealVectorType &diag, RealVectorType &sub_diag,
+                    Index max_iter, bool do_vectors,
+                    MatrixType &eigen_vectors) {
     typedef typename MatrixType::elem_type Scalar;
     typedef typename arma::get_pod_type<Scalar>::result RealScalar;
     Index n = diag.size();
@@ -156,20 +156,20 @@ void compute_from_tri_diag(RealVectorType &diag, RealVectorType &subDiag,
     const RealScalar precision_inv = RealScalar(1) / (std::numeric_limits<RealScalar>::epsilon)();
     while (end > 0) {
         for (Index i = start; i < end; ++i) {
-            if (std::abs(subDiag[i]) < considerAsZero) {
-                subDiag[i] = RealScalar(0);
+            if (std::abs(sub_diag[i]) < considerAsZero) {
+                sub_diag[i] = RealScalar(0);
             } else {
-                // abs(subDiag[i]) <= epsilon * sqrt(abs(diag[i]) + abs(diag[i+1]))
+                // abs(sub_diag[i]) <= epsilon * sqrt(abs(diag[i]) + abs(diag[i+1]))
                 // Scaled to prevent underflow.
-                const RealScalar scaled_sub_diag = precision_inv * subDiag[i];
+                const RealScalar scaled_sub_diag = precision_inv * sub_diag[i];
                 if (scaled_sub_diag * scaled_sub_diag <= (std::abs(diag[i]) + std::abs(diag[i + 1]))) {
-                    subDiag[i] = RealScalar(0);
+                    sub_diag[i] = RealScalar(0);
                 }
             }
         }
 
         // find the largest unreduced block at the end of the matrix.
-        while (end > 0 && (subDiag[end - 1] == RealScalar(0))) {
+        while (end > 0 && (sub_diag[end - 1] == RealScalar(0))) {
             end--;
         }
         if (end <= 0)
@@ -177,16 +177,15 @@ void compute_from_tri_diag(RealVectorType &diag, RealVectorType &subDiag,
 
         // if we spent too many iterations, we give up
         iter++;
-        if (iter > maxIterations * n)
+        if (iter > max_iter * n)
             break;
 
         start = end - 1;
-        while (start > 0 && (subDiag[start - 1] != RealScalar(0)))
+        while (start > 0 && (sub_diag[start - 1] != RealScalar(0)))
             start--;
 
-        tri_diag_qr_step(
-                diag.memptr(), subDiag.memptr(), start, end,
-                computeEigenvectors ? eigenVectors.memptr() : (Scalar *) 0, n);
+        tri_diag_qr_step(diag.memptr(), sub_diag.memptr(), start, end,
+                         do_vectors ? eigen_vectors.memptr() : (Scalar *) 0, n);
     }
 }
 
