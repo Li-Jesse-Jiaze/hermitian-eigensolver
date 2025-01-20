@@ -25,15 +25,13 @@ public:
             : mEigenVectors(),
               mWorkspace(),
               mEigenValues(),
-              mSubDiag(),
-              mHouseholderCoefficients() {}
+              mSubDiag() {}
 
     explicit HermitianEigenSolver(const MatrixType &matrix, bool computeVectors = true)
             : mEigenVectors(matrix.n_rows, matrix.n_cols),
-              mWorkspace(matrix.n_cols),
+              mWorkspace(2 * matrix.n_cols),
               mEigenValues(matrix.n_cols),
-              mSubDiag(matrix.n_rows > 1 ? matrix.n_rows - 1 : 1),
-              mHouseholderCoefficients(matrix.n_cols > 1 ? matrix.n_cols - 1 : 1) {
+              mSubDiag(matrix.n_rows > 1 ? matrix.n_rows - 1 : 1) {
         compute(matrix, computeVectors);
     }
 
@@ -48,14 +46,13 @@ public:
         return mEigenValues;
     }
 
-    static const Index mMaxIterations = 30;
+    static const Index mMaxIterations = 30; // From LAPACK
 
 protected:
     MatrixType mEigenVectors;
     VectorType mWorkspace;
     RealVectorType mEigenValues;
     RealVectorType mSubDiag;
-    VectorType mHouseholderCoefficients;
 };
 
 template<typename MatrixType>
@@ -78,8 +75,7 @@ HermitianEigenSolver<MatrixType>::compute(const MatrixType &matrix, bool compute
         scale = RealScalar(1);
     mat /= scale;
     mSubDiag.resize(n - 1);
-    mHouseholderCoefficients.resize(n - 1);
-    tridiagonalization(mat, diag, mSubDiag, mHouseholderCoefficients, mWorkspace, computeVectors);
+    tridiagonalization(mat, diag, mSubDiag, mWorkspace, computeVectors);
     eigen_tri_diag(diag, mSubDiag, mMaxIterations, computeVectors, mEigenVectors);
     mEigenValues *= scale;
     return *this;

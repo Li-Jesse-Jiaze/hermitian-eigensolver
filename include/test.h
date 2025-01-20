@@ -1,7 +1,7 @@
 #include <iostream>
 #include <typeinfo>
 #include <armadillo>
-#include <HermitianEigenSolver.h>
+#include "HermitianEigenSolver.h"
 
 template<typename RealScalar, typename Scalar>
 arma::Mat<Scalar> generate_hermitian(arma::Col<RealScalar> eigen_values) {
@@ -25,4 +25,22 @@ void test_gen() {
     arma::cx_mat evs;
     arma::eig_sym(ev, evs, A);
     ev.t().print();
+}
+
+void test_time() {
+    arma::vec eigen_values(100, arma::fill::randn);
+    auto A = generate_hermitian<double, std::complex<double>>(eigen_values);
+    // A.print();
+    arma::wall_clock timer;
+    timer.tic();
+    HermitianEigenSolver he(A);
+    std::cout << timer.toc() << std::endl;
+    // he.eigenvalues().t().print();
+    arma::vec ev;
+    arma::cx_mat evs;
+
+    timer.tic();
+    arma::eig_sym(ev, evs, A);
+    std::cout << timer.toc() << std::endl;
+    // ev.t().print();
 }

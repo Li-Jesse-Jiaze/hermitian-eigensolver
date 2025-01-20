@@ -4,13 +4,13 @@
 #include "base.h"
 
 /**
- * @brief Make a Givens Rotation $G$ s.t. $G^T (a, b)^T = (r, 0)^T$
+ * @brief Make a Givens Rotation s.t. G^T (a, b)^T = (r, 0)^T
  * 
  * @tparam Scalar The type of the input values (should be real)
  * @param[in] a The first value
  * @param[in] b The second value
- * @param[in] c The cosine component of $G$
- * @param[in] s The sine component of $G$
+ * @param[in] c The cosine component of G
+ * @param[in] s The sine component of G
  */
 template<typename Scalar>
 inline void make_givens(const Scalar &a, const Scalar &b, Scalar &c, Scalar &s) {
@@ -40,7 +40,7 @@ inline void make_givens(const Scalar &a, const Scalar &b, Scalar &c, Scalar &s) 
 }
 
 /**
- * @brief Apply the Givens rotation with c and s to the columns p and q of matrix, i.e. $A = A * G$
+ * @brief Apply the Givens rotation with c and s to the columns p and q of matrix, i.e. A = A * G
  * 
  * @tparam Scalar The type of the matrix values (can be complex)
  * @tparam OtherScalar The type of the rotation parameters (only real)
@@ -48,8 +48,8 @@ inline void make_givens(const Scalar &a, const Scalar &b, Scalar &c, Scalar &s) 
  * @param n_rows Number of rows in the matrix
  * @param p Index of the first column
  * @param q Index of the second column
- * @param c The cosine component of $G$
- * @param s The sine component of $G$
+ * @param c The cosine component of G
+ * @param s The sine component of G
  */
 template<typename Scalar, typename OtherScalar>
 void apply_givens_right(Scalar *matrix_ptr, Index n_rows, Index p, Index q, const OtherScalar &c, const OtherScalar &s) {
