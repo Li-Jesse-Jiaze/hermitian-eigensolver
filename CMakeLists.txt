@@ -14,7 +14,7 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 # Add the include directory
-include_directories(${ARMADILLO_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include)
+include_directories(${ARMADILLO_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/tests)
 
 # Add source files
 set(SOURCES

@@ -43,7 +43,7 @@ inline void make_givens(const Scalar &a, const Scalar &b, Scalar &c, Scalar &s) 
  * @brief Apply the Givens rotation with c and s to the columns p and q of matrix, i.e. A = A * G
  * 
  * @tparam Scalar The type of the matrix values (can be complex)
- * @tparam OtherScalar The type of the rotation parameters (only real)
+ * @tparam RealScalar The type of the rotation parameters (only real)
  * @param matrix_ptr Pointer to the first element of the matrix (Armadillo dense matrix is stored in column-major order)
  * @param n_rows Number of rows in the matrix
  * @param p Index of the first column
@@ -51,8 +51,8 @@ inline void make_givens(const Scalar &a, const Scalar &b, Scalar &c, Scalar &s) 
  * @param c The cosine component of G
  * @param s The sine component of G
  */
-template<typename Scalar, typename OtherScalar>
-void apply_givens_right(Scalar *matrix_ptr, Index n_rows, Index p, Index q, const OtherScalar &c, const OtherScalar &s) {
+template<typename Scalar, typename RealScalar>
+void apply_givens_right(Scalar *matrix_ptr, Index n_rows, Index p, Index q, const RealScalar &c, const RealScalar &s) {
     if (c == Scalar(1) && s == Scalar(0)) return;
 
     for (Index i = 0; i < n_rows; ++i) {

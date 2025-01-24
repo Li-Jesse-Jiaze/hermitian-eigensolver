@@ -42,7 +42,7 @@ void make_householder(VectorType &vector, Scalar &tau, RealScalar &beta) {
         if (n > 1) {
             vector.subvec(1, n - 1) /= (c0 - beta);
         }
-        tau = scalarConj((beta - c0) / beta);
+        tau = scalar_conj((beta - c0) / beta);
     }
 }
 

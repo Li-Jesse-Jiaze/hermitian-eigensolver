@@ -10,12 +10,12 @@
 typedef std::ptrdiff_t Index;
 
 template<typename T>
-T scalarConj(const T &x) {
+T scalar_conj(const T &x) {
     return x;
 }
 
 template<typename T>
-std::complex<T> scalarConj(const std::complex<T> &x) {
+std::complex<T> scalar_conj(const std::complex<T> &x) {
     return std::conj(x);
 }
 
