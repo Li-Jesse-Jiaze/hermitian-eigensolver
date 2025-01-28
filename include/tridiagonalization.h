@@ -34,14 +34,14 @@ void tridiagonalization(MatrixType &A, RealVectorType &diag, RealVectorType &sub
         A(i + 1, i) = Scalar(1); // Reconstruct the Householder vector u in A[i+1:, i]
 
         // Apply H to A[i+1:, i+1:] A = H A H*, see Golub's "Matrix Computations" Chapter 5.1.4
-        arma::subview<Scalar> subA = A.submat(i + 1, i + 1, n - 1, n - 1);
+        arma::subview<Scalar> A_sub = A.submat(i + 1, i + 1, n - 1, n - 1);
 
         // do scalar * vector firstly to avoid scalar * matrix, since "*" is left associative in C++
-        householders.tail(remain) = subA * (scalar_conj(tau) * tail);
+        householders.tail(remain) = A_sub * (scalar_conj(tau) * tail);
         Scalar alpha = scalar_conj(tau) * RealScalar(-0.5) * arma::cdot(householders.tail(remain), tail);
         householders.tail(remain) += alpha * tail;
         arma::Mat<Scalar> uw = tail * householders.tail(remain).t();
-        subA -= (uw + uw.t());
+        A_sub -= (uw + uw.t());
 
         sub_diag(i) = beta;
         householders(i) = tau; // Now householders[:i] is useless so use it to store tau
@@ -50,8 +50,8 @@ void tridiagonalization(MatrixType &A, RealVectorType &diag, RealVectorType &sub
     if (withQ) {
         // Q = H_n-1 ... H_1 I
         MatrixType Q = arma::eye<MatrixType>(n, n);
-        Index numVec = n - 1;
-        for (Index k = numVec - 1; k >= 0; --k) {
+        Index num_vec = n - 1;
+        for (Index k = num_vec - 1; k >= 0; --k) {
             arma::subview<Scalar> Q_sub = Q.submat(k + 1, k + 1, n - 1, n - 1);
             arma::subview_col<Scalar> u = k + 2 < n ? A.col(k).subvec(k + 2, n - 1) : A.col(k).subvec(0, 0);
             apply_householder_left(Q_sub, u, scalar_conj(householders(k)), workspace.memptr() + n);

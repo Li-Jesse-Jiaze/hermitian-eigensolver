@@ -35,41 +35,6 @@ RealScalar compute_eigenvector_error(const arma::Mat<Scalar> &matrix,
 }
 
 template<typename Scalar>
-void test_hard() {
-    typedef typename arma::get_pod_type<Scalar>::result RealScalar;
-    // Arma Limit test
-    {
-        arma::Col<RealScalar> eigenvalues(10, arma::fill::ones);
-        // eigenvalues.t().print("Expected Eigenvalues:");
-        while (true) {
-            eigenvalues(9) /= 10;
-            auto A = generate_hermitian<RealScalar, Scalar>(eigenvalues);
-            arma::Col<RealScalar> ev;
-            arma::eig_sym(ev, A);
-            // ev.t().print("Arma:");
-            if (compute_eigenvalue_error(eigenvalues, ev) > 1e-3) {
-                std::cout << "Armadillo Limit:" << eigenvalues(9) << std::endl;
-                break;
-            }
-        }
-    }
-    // Custom Limit test
-    {
-        arma::Col<RealScalar> eigenvalues(10, arma::fill::ones);
-        while (true) {
-            eigenvalues(9) /= 10;
-            auto A = generate_hermitian<RealScalar, Scalar>(eigenvalues);
-            HermitianEigenSolver hes(A);
-            // hes.eigenvalues().t().print("HES");
-            if (compute_eigenvalue_error(eigenvalues, hes.eigenvalues()) > 1e-3) {
-                std::cout << "Custom Limit:" << eigenvalues(9) << std::endl;
-                break;
-            }
-        }
-    }
-}
-
-template<typename Scalar>
 void test_time_vectors(Index n) {
     typedef typename arma::get_pod_type<Scalar>::result RealScalar;
     constexpr int iterations = 5;
@@ -153,3 +118,40 @@ void test_time_values(Index n) {
     std::cout << "Custom solver time: " << compute_average(my_times) << " seconds\n";
     std::cout << "Custom solver eigenvalue error: " << compute_average(my_value_errors) << "\n";
 }
+
+
+template<typename Scalar>
+void test_hard() {
+    typedef typename arma::get_pod_type<Scalar>::result RealScalar;
+    // Arma Limit test
+    {
+        arma::Col<RealScalar> eigenvalues(10, arma::fill::ones);
+        // eigenvalues.t().print("Expected Eigenvalues:");
+        while (true) {
+            eigenvalues(0) /= 10;
+            auto A = generate_hermitian<RealScalar, Scalar>(eigenvalues);
+            arma::Col<RealScalar> ev;
+            arma::eig_sym(ev, A);
+            // ev.t().print("Arma:");
+            if (compute_eigenvalue_error(eigenvalues, ev) > 1e-2) {
+                std::cout << "Armadillo Limit:" << eigenvalues(0) << std::endl;
+                break;
+            }
+        }
+    }
+    // Custom Limit test
+    {
+        arma::Col<RealScalar> eigenvalues(10, arma::fill::ones);
+        while (true) {
+            eigenvalues(0) /= 10;
+            auto A = generate_hermitian<RealScalar, Scalar>(eigenvalues);
+            HermitianEigenSolver hes(A);
+            // hes.eigenvalues().t().print("HES");
+            if (compute_eigenvalue_error(eigenvalues, hes.eigenvalues()) > 1e-2) {
+                std::cout << "Custom Limit:" << eigenvalues(0) << std::endl;
+                break;
+            }
+        }
+    }
+}
+

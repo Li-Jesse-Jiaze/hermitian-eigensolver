@@ -4,7 +4,7 @@
 #include "base.h"
 
 /**
- * @brief Make a reflector H s.t. H v = ||v|| e1 = [beta, 0, ..., 0]^T where H = I - tau u u^*, see Golub's "Matrix Computations" algorithm 5.1.1.
+ * @brief Make a reflector H s.t. H v = ||v|| e1 = [beta, 0, ..., 0]^T where H = I - tau u u^*
  * 
  * @param[in,out] vector The input v and the output u with u[1:] in v[1:]
  * @param tau The scalar factor of the Householder

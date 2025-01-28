@@ -171,7 +171,6 @@ static void tri_diag_qr_step(RealScalar *diag, RealScalar *sub_diag, Index start
         }
     }
 
-    // See the proof of Theorem 2.5.11 and Golub's "Matrix Computations" Algorithm 8.3.2
     RealScalar x = diag[start] - mu;
     RealScalar z = sub_diag[start];
     for (Index k = start; k < end && z != RealScalar(0); ++k) {
