@@ -155,3 +155,11 @@ void test_hard() {
     }
 }
 
+void test_simple() {
+    arma::cx_mat A = arma::randn<arma::cx_mat>(5, 5);
+    A = arma::symmatl(A);
+    HermitianEigenSolver hes(A, false); // eigenvalues only
+    hes.eigenvalues().t().print("The eigenvalues of A are:");
+    hes.compute(A + arma::eye(5, 5)); // re-use for A+I
+    hes.eigenvalues().t().print("The eigenvalues of A+I are:");
+}
