@@ -4,11 +4,11 @@
 #include "base.h"
 
 /**
- * @brief Make a reflector H s.t. H v = ||v|| e1 = [beta, 0, ..., 0]^T where H = I - tau u u^*
+ * @brief Make a reflector H s.t. H v = [beta, 0, ..., 0]^T where H = I - tau u u^*
  * 
  * @param[in,out] vector The input v and the output u with u[1:] in v[1:]
- * @param tau The scalar factor of the Householder
- * @param beta The norm of v
+ * @param tau The scalar factor of the Householder 2/(w* w) in notes
+ * @param beta The result of H v
  */
 template<typename VectorType, typename Scalar, typename RealScalar>
 void make_householder(VectorType &vector, Scalar &tau, RealScalar &beta) {
