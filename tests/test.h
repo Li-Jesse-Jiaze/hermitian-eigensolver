@@ -16,7 +16,7 @@ arma::Mat<Scalar> generate_hermitian(arma::Col<RealScalar> eigen_values) {
 }
 
 template<typename RealScalar>
-RealScalar compute_eigenvalue_error(const arma::Col<RealScalar> &expected_eigenvalues,
+double compute_eigenvalue_error(const arma::Col<RealScalar> &expected_eigenvalues,
                                     const arma::Col<RealScalar> &computed_eigenvalues) {
     arma::Col<RealScalar> sorted_expected = arma::sort(expected_eigenvalues);
     arma::Col<RealScalar> sorted_computed = arma::sort(computed_eigenvalues);
@@ -24,14 +24,14 @@ RealScalar compute_eigenvalue_error(const arma::Col<RealScalar> &expected_eigenv
 }
 
 template<typename RealScalar, typename Scalar>
-RealScalar compute_eigenvector_error(const arma::Mat<Scalar> &matrix,
+double compute_eigenvector_error(const arma::Mat<Scalar> &matrix,
                                      const arma::Col<RealScalar> &eigenvalues,
                                      const arma::Mat<Scalar> &eigenvectors) {
     Index n = matrix.n_cols;
     arma::Mat<Scalar> D(n, n, arma::fill::zeros);
     D.diag() = arma::conv_to<arma::Col<Scalar>>::from(eigenvalues);
     arma::Mat<Scalar> B = eigenvectors * D * eigenvectors.t();
-    return arma::norm(matrix - B, "inf");
+    return arma::norm(matrix - B, "inf") / static_cast<double>(n);
 }
 
 template<typename Scalar>
@@ -55,27 +55,23 @@ void test_time_vectors(Index n) {
         timer.tic();
         arma::eig_sym(ev, evs, A);
         arma_times.push_back(timer.toc());
-        // arma_value_errors.push_back(compute_eigenvalue_error(eigenvalues, ev));
         arma_vector_errors.push_back(compute_eigenvector_error(A, ev, evs));
 
         // Compute with HermitianEigenSolver
         timer.tic();
         HermitianEigenSolver hes(A);
         my_times.push_back(timer.toc());
-        // my_value_errors.push_back(compute_eigenvalue_error(eigenvalues, hes.eigenvalues()));
         my_vector_errors.push_back(compute_eigenvector_error(A, hes.eigenvalues(), hes.eigenvectors()));
     }
 
     auto compute_average = [](const std::vector<double>& values) {
-        return std::accumulate(values.begin(), values.end(), 0.0) / values.size();
+        return std::accumulate(values.begin(), values.end(), 0.0) / static_cast<double>(values.size());
     };
 
     std::cout << "Armadillo time: " << compute_average(arma_times) << " seconds\n";
-    // std::cout << "Armadillo eigenvalue error: " << compute_average(arma_value_errors) << "\n";
     std::cout << "Armadillo eigenvector error: " << compute_average(arma_vector_errors) << "\n";
 
     std::cout << "Custom solver time: " << compute_average(my_times) << " seconds\n";
-    // std::cout << "Custom solver eigenvalue error: " << compute_average(my_value_errors) << "\n";
     std::cout << "Custom solver eigenvector error: " << compute_average(my_vector_errors) << "\n";
 }
 
@@ -109,7 +105,7 @@ void test_time_values(Index n) {
     }
 
     auto compute_average = [](const std::vector<double>& values) {
-        return std::accumulate(values.begin(), values.end(), 0.0) / values.size();
+        return std::accumulate(values.begin(), values.end(), 0.0) / static_cast<double>(values.size());
     };
 
     std::cout << "Armadillo time: " << compute_average(arma_times) << " seconds\n";

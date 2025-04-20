@@ -14,7 +14,7 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 # Add the include directory
-include_directories(${ARMADILLO_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/tests)
+include_directories(${ARMADILLO_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/HermitianEigenSolver ${PROJECT_SOURCE_DIR}/tests)
 
 # Add source files
 set(SOURCES
@@ -31,7 +31,7 @@ target_link_libraries(main PRIVATE ${ARMADILLO_LIBRARIES} ${BLAS_LIBRARIES} ${LA
 find_package(Doxygen REQUIRED)
 
 # Set Doxygen input and output paths
-set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/include) # Directory with source code
+set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/HermitianEigenSolver) # Directory with source code
 set(DOXYGEN_OUTPUT_DIR ${CMAKE_BINARY_DIR}/docs) # Documentation output directory
 set(DOXYGEN_CONFIG_FILE ${CMAKE_BINARY_DIR}/Doxyfile)
 

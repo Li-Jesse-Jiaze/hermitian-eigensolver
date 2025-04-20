@@ -1,7 +1,6 @@
 #ifndef TRIDIAGONALIZATION_H
 #define TRIDIAGONALIZATION_H
 
-#include <armadillo>
 #include "base.h"
 #include "householder.h"
 
@@ -10,7 +9,7 @@
  * 
  * @param[in, out] A The input Hermitian matrix and the output Q matrix
  * @param[out] diag The diagonal of T
- * @param[out] sub_diag The subdiagonal of T
+ * @param[out] sub_diag The sub-diagonal of T
  * @param[in] workspace Pointer for memory reuse with at least 2 * A.n_cols entries
  * @param[in] withQ If true, store the matrix Q in A
  */
@@ -22,7 +21,7 @@ void tridiagonalization(MatrixType &A, RealVectorType &diag, RealVectorType &sub
     Index n = A.n_rows;
     // Need n - 1 more scalars for householder coefficients and tmp w
     VectorType householders(workspace.memptr(), n - 1, false, false);
-    // Use Householder reflection to eliminate elements below the subdiagonal
+    // Use Householder reflection to eliminate elements below the sub-diagonal
     for (Index i = 0; i < n - 1; ++i) {
         Index remain = n - i - 1; // In column i size(TBD) = n - i - 1
         arma::subview_col<Scalar> tail = A.col(i).tail(remain);
@@ -33,10 +32,8 @@ void tridiagonalization(MatrixType &A, RealVectorType &diag, RealVectorType &sub
 
         A(i + 1, i) = Scalar(1); // Reconstruct the Householder vector u in A[i+1:, i]
 
-        // Apply H to A[i+1:, i+1:] A = H A H*, see Golub's "Matrix Computations" Chapter 5.1.4
+        // Apply H to A[i+1:, i+1:] A = H A H*
         arma::subview<Scalar> A_sub = A.submat(i + 1, i + 1, n - 1, n - 1);
-
-        // do scalar * vector firstly to avoid scalar * matrix, since "*" is left associative in C++
         householders.tail(remain) = A_sub * (scalar_conj(tau) * tail);
         Scalar alpha = scalar_conj(tau) * RealScalar(-0.5) * arma::cdot(householders.tail(remain), tail);
         householders.tail(remain) += alpha * tail;

@@ -6,10 +6,10 @@
 #include "base.h"
 
 /**
- * @brief One symmetric tridiagonal QR step with implicit Wilkinson shift
+ * @brief One symmetric tri-diagonal QR step with implicit Wilkinson shift
  *
- * @param diag the diagonal vector of the input tridiagonal matrix
- * @param sub_diag the sub-diagonal vector of the input tridiagonal matrix
+ * @param diag the diagonal vector of the input tri-diagonal matrix
+ * @param sub_diag the sub-diagonal vector of the input tri-diagonal matrix
  * @param start starting index to work on
  * @param end last+1 index to work on
  * @param Q pointer to the column-major matrix with eigenvectors, set to 0 if no eigenvectors need
@@ -19,7 +19,7 @@ template<typename RealScalar, typename Scalar>
 static void tri_diag_qr_step(RealScalar *diag, RealScalar *sub_diag, Index start, Index end, Scalar *Q, Index n);
 
 /**
- * @brief Solve EVP for a tridiagonal matrix
+ * @brief Solve EVP for a tri-diagonal matrix
  *
  * @param[in,out] diag Input of the main diagonal, output of the eigenvalues
  * @param[in,out] sub_diag Input of the sub diagonal
@@ -82,7 +82,6 @@ public:
     static const Index mMaxIterations = 30; // full max iterations is 30n, from LAPACK
 
 protected:
-    // TODO: Can we use fixed size for some of these?
     RealVectorType mEigenValues;
     MatrixType mEigenVectors;
     VectorType mWorkspace;
