@@ -1,4 +1,13 @@
-# NLA_final
+Hermitian EigenSolver
+
+A header-only C++ library for computing eigenvalues and eigenvectors of dense Hermitian matrices using Householder tri-diagonalization and QR iteration. This project was developed as the programming exam for the Numerical Linear Algebra course at the University of Heidelberg (2024).
+
+## Prerequisites
+
+- C++ compiler with C++11 support (e.g., GCC, Clang).
+- [CMake](https://cmake.org/).
+- [Armadillo](https://arma.sourceforge.net/download.html).
+- [Doxygen](http://www.doxygen.nl/) (optional, for generating documentation).
 
 ## 🔧 Build
 
